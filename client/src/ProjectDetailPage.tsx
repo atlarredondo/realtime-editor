@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {api} from './lib/api';
 import {DashboardLayout} from './components/DashboardLayout';
@@ -39,23 +39,38 @@ export const ProjectDetailPage = () => {
     const location = useLocation();
 
     const { getProjectById, updateProjectInList } = useProjects();
-    const project = getProjectById(parseInt(id!)) ?? null
-    const [content, setContent] = useState(project ?? '');
+
+    const [content, setContent] = useState('');
+
+    const project = useMemo(
+        () => {
+            console.log('inside here refreshing the project')
+            const project = getProjectById(parseInt(id!)) ?? null;
+
+            return project},
+        [id, getProjectById])
+
+    console.log('this is the project', project)
+
+
     const [isSaving, setIsSaving] = useState(false);
 
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
     useEffect(() => {
-        if (!project) {
+        if (project){
+            setContent(project?.content ?? '')
+        }else {
+            console.log('inside here')
             api('/api/project/getProject', {
                 body: JSON.stringify({projectId: id}),
                 method: 'post'
             }).then(res => res.json()).then(data => {
-                updateProjectInList(data);
-                setContent(data.content || '');
+                updateProjectInList(data.project);
+                setContent(data.project.content || '');
             });
         }
-    }, [id]);
+    }, [project, project?.content, id, updateProjectInList]);
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -82,7 +97,7 @@ export const ProjectDetailPage = () => {
     if (!project) return <DashboardLayout>Loading...</DashboardLayout>;
 
     return (
-        <DashboardLayout userEmail={project.author?.email}>
+        <DashboardLayout userEmail="user@example.com">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
@@ -131,15 +146,17 @@ export const ProjectDetailPage = () => {
                                 {/* Render the Author */}
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-xs font-bold">A</div>
-                                    <div className="text-sm font-medium truncate">{project.author?.email} <span className="text-[10px] text-amber-600 block">Owner</span></div>
+                                    {// TODO: Implement show list of users\}
+                                         }
+                                    <div className="text-sm font-medium truncate">THE OWNER <span className="text-[10px] text-amber-600 block">Owner</span></div>
                                 </div>
                                 {/* Render Invited Users (Assuming your API returns an 'invites' array) */}
-                                {project.invites?.map((user: any) => (
-                                    <div key={user.id} className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">U</div>
-                                        <div className="text-sm font-medium truncate">{user.email}</div>
-                                    </div>
-                                ))}
+                                {/*{project.invites?.map((user: any) => (*/}
+                                {/*    <div key={user.id} className="flex items-center gap-3">*/}
+                                {/*        <div className="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">U</div>*/}
+                                {/*        <div className="text-sm font-medium truncate">{user.email}</div>*/}
+                                {/*    </div>*/}
+                                {/*))}*/}
                             </div>
                         </div>
                     </div>

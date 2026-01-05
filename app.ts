@@ -9,7 +9,7 @@ import {fileURLToPath} from 'url';
 import './types/passport';
 import {router as projectRouter} from "./routes/project";
 import {createServer} from 'http';
-import {wss} from "./web_socket_server";
+import {wss} from "./web_sockets/web_socket_server";
 import cookie from 'cookie';
 import signature from 'cookie-signature';
 import {PrismaSessionStore} from "@quixo3/prisma-session-store";

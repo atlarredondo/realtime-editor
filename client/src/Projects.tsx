@@ -4,6 +4,7 @@ import {DashboardLayout} from './components/DashboardLayout';
 import {Link} from 'react-router-dom';
 import {Modal} from "./components/Modal.tsx";
 import {useProjects} from "./components/ProjectContext.tsx";
+import {useSocketUpdate} from "./components/SocketUpdateHook.tsx";
 
 interface ModalProps {
     isOpen: boolean;
@@ -18,7 +19,7 @@ return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            onSubmit={onSubmit}
+            onSubmit={() => {onSubmit(name)}}
             title="Create New Project"
             submitLabel="Create Project"
         >
@@ -39,35 +40,32 @@ return (
 };
 
 export const ProjectsPage = () => {
-    const {projects, setProjects, getAllProjects} = useProjects();
+    useSocketUpdate();
+
+    const {setProjects, getAllProjects} = useProjects();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         api('/api/project/getProjects',{  method: "POST",}).then(res => res.json()).then((responseBody) => {
-            console.log('the body', responseBody) ;
             const projectsById = responseBody.projects.map((project: { id: any; }) => [project.id, project])
-
-            console.log('the map', new Map(projectsById))
             setProjects(new Map(projectsById))
-            console.log('after project', projects)
         });
-        console.log('on load', projects)
 
-        const ws = new WebSocket(`ws://localhost:3000?`);
-
-
-
-        ws.onmessage = (event) => {
-            console.log('this is the event sent', event.data)
-            setProjects((prevState) => {
-                console.log(prevState,event.data)
-                   return [ JSON.parse(event.data), ...prevState]
-            }
-
-            )
-
-        }
+        // const ws = new WebSocket(`ws://localhost:3000?`);
+        //
+        //
+        //
+        // ws.onmessage = (event) => {
+        //     console.log('this is the event sent', event.data)
+        //     setProjects((prevState) => {
+        //         console.log('Got the new value', prevState,event.data)
+        //            return [ JSON.parse(event.data), ...prevState]
+        //     }
+        //
+        //     )
+        //
+        // }
     }, []);
 
     function handleCreateProject(name: string){

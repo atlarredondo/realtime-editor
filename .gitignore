@@ -4,6 +4,7 @@ node_modules/
 Thumbs.db
 *.log
 .eslintcache
+*.db
 
 # --- Backend / TypeScript ---
 dist/

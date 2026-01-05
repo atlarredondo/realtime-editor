@@ -1,44 +1,43 @@
 import React, {createContext, useCallback, useContext, useState} from 'react';
+import type { Project} from '../../../generated/prisma/client';
 
 interface ProjectContextType {
-    projects: Map<number, any>;
-    setProjects: (newProjects: Map<number, any>) => void;
+    projects: Map<number, Project>;
+    setProjects: (newProjects: Map<number, Project>) => void;
         // React.Dispatch<React.SetStateAction<Map<number, any>>>;
-    updateProjectInList: (updatedProject: any) => void;
-    getProjectById: (id: number) => any | undefined;
-    getAllProjects: () => any[]
+    updateProjectInList: (updatedProject: Project) => void;
+    getProjectById: (id: number) => Project | undefined;
+    getAllProjects: () => Array<Project>
 }
 
 const ProjectContext = createContext<ProjectContextType |null>(null)
 
 export const ProjectProvider = ({children}: {children: React.ReactNode}) =>{
-    const [projects, setProjectsState] = useState<Map<number, any>>(new Map())
+    const [projects, setProjectsState] = useState<Map<number, Project>>(new Map())
 
-    const setProjects = useCallback((newProjects:  Map<number, any>) => {
-        console.log('inside here updating', newProjects)
-        setProjectsState(newProjects)
-        console.log('after in context', projects)
+    const setProjects = useCallback((newProjects:  Map<number, Project>) => {
+        setProjectsState(new Map(newProjects));
     }, [])
 
-    const updateProjectInList = useCallback((updatedProject: any)=> {
-        setProjects((prev) => {
-            prev.set(updatedProject.id, updatedProject)
-            return prev
+    const updateProjectInList = useCallback((updatedProject: Project)=> {
+        setProjectsState((prev) => {
+            console.log('this is the updated project', updatedProject)
+            const newMap = new Map(prev)
+                newMap.set(updatedProject.id, updatedProject)
+            return newMap
         }
-
-
         )
 
     }, [])
 
     const getProjectById = useCallback((id: number) => {
         return projects.get(id)
-    }, [])
+    }, [projects])
 
-    const getAllProjects = useCallback(()=>
-    {return Array.from(projects.values())}, []
+    const getAllProjects = useCallback(()=> {
+        return Array.from(projects.values())
 
-    )
+    }, [projects] )
 
     return (
         <ProjectContext.Provider
